@@ -5,7 +5,7 @@ import { uploadFileToDrive } from "../services/driveService";
 import validUrl from "valid-url";
 import path from "path";
 
-export function registerPdfCommand(app: App): void {
+export function registerWebClipCommand(app: App): void {
   app.command("/webclip", async ({ command, ack, respond }) => {
     // コマンドを確認
     await ack();

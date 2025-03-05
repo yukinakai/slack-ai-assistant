@@ -4,7 +4,7 @@ import { App, ExpressReceiver } from "@slack/bolt";
 import dotenv from "dotenv";
 
 // コマンドハンドラー
-import { registerPdfCommand } from "./commands/pdfCommand";
+import { registerWebClipCommand } from "./commands/webClipCommand";
 
 // 環境変数の読み込み
 dotenv.config();
@@ -51,7 +51,7 @@ app.command("/hello", async ({ command, ack, respond }) => {
 });
 
 // /pdf コマンドの登録
-registerPdfCommand(app);
+registerWebClipCommand(app);
 
 // Expressアプリケーションの設定
 const expressApp = receiver.app;
