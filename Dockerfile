@@ -22,7 +22,7 @@ RUN npm install
 RUN mkdir -p /app/keys
 
 # Google認証情報をコピー（もしあれば）
-COPY ./keys/* /app/keys/ 2>/dev/null || :
+COPY ./keys /app/keys/
 
 # ソースコードをコピー
 COPY . .
