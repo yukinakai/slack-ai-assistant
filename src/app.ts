@@ -1,10 +1,24 @@
-// app.ts
+// src/app.ts
 import express from 'express';
 import { App, ExpressReceiver } from '@slack/bolt';
 import dotenv from 'dotenv';
 
+// コマンドハンドラー
+import { registerPdfCommand } from './commands/pdfCommand';
+
 // 環境変数の読み込み
 dotenv.config();
+
+// 環境変数の確認と警告表示
+if (!process.env.SLACK_BOT_TOKEN) {
+  console.warn('Warning: SLACK_BOT_TOKEN is not set in environment variables');
+}
+if (!process.env.SLACK_SIGNING_SECRET) {
+  console.warn('Warning: SLACK_SIGNING_SECRET is not set in environment variables');
+}
+if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+  console.warn('Warning: GOOGLE_APPLICATION_CREDENTIALS is not set in environment variables');
+}
 
 // ExpressReceiverの設定
 const receiver = new ExpressReceiver({
@@ -31,6 +45,9 @@ app.command('/hello', async ({ command, ack, respond }) => {
     text: `こんにちは！「${text}」とおっしゃいましたね`,
   });
 });
+
+// /pdf コマンドの登録
+registerPdfCommand(app);
 
 // Expressアプリケーションの設定
 const expressApp = receiver.app;
