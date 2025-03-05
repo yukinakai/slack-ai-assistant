@@ -1,0 +1,26 @@
+steps:
+  # Docker imageのビルド
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/slack-ai-assistant', '.']
+  
+  # Docker imageをContainer Registryにプッシュ
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/slack-ai-assistant']
+  
+  # Cloud Runにデプロイ
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'slack-ai-assistant'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/slack-ai-assistant'
+      - '--platform'
+      - 'managed'
+      - '--region'
+      - 'asia-northeast1'
+      - '--allow-unauthenticated'
+
+images:
+  - 'gcr.io/$PROJECT_ID/slack-ai-assistant'
