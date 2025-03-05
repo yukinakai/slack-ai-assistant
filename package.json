@@ -7,7 +7,7 @@
     "build": "tsc",
     "start": "node dist/app.js",
     "dev": "nodemon --exec ts-node src/app.ts",
-    "deploy": "sh -c 'source .env && gcloud builds submit --tag gcr.io/$(gcloud config get-value project)/slack-ai-assistant && gcloud run deploy slack-ai-assistant --image gcr.io/$(gcloud config get-value project)/slack-ai-assistant --platform managed --allow-unauthenticated --region asia-northeast1 --update-env-vars SLACK_BOT_TOKEN=$SLACK_BOT_TOKEN,SLACK_SIGNING_SECRET=$SLACK_SIGNING_SECRET,GOOGLE_APPLICATION_CREDENTIALS=/app/keys/google-credentials.json'"
+    "deploy": "sh -c 'source .env && gcloud builds submit --tag gcr.io/$(gcloud config get-value project)/slack-ai-assistant && gcloud run deploy slack-ai-assistant --image gcr.io/$(gcloud config get-value project)/slack-ai-assistant --platform managed --allow-unauthenticated --region asia-northeast1 --update-env-vars SLACK_BOT_TOKEN=$SLACK_BOT_TOKEN,SLACK_SIGNING_SECRET=$SLACK_SIGNING_SECRET,GOOGLE_APPLICATION_CREDENTIALS=/app/keys/google-credentials.json,GOOGLE_DRIVE_FOLDER_ID=$GOOGLE_DRIVE_FOLDER_ID'"
   },
   "keywords": ["slack", "bot", "cloud-run", "ai-assistant"],
   "author": "",
