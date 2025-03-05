@@ -1,0 +1,47 @@
+// app.ts
+import express from 'express';
+import { App, ExpressReceiver } from '@slack/bolt';
+import dotenv from 'dotenv';
+
+// 環境変数の読み込み
+dotenv.config();
+
+// ExpressReceiverの設定
+const receiver = new ExpressReceiver({
+  signingSecret: process.env.SLACK_SIGNING_SECRET || '',
+  processBeforeResponse: true,
+});
+
+// Slack Appの初期化
+const app = new App({
+  token: process.env.SLACK_BOT_TOKEN,
+  receiver,
+});
+
+// /hello コマンドのハンドラー
+app.command('/hello', async ({ command, ack, respond }) => {
+  // コマンドの確認応答
+  await ack();
+  
+  // 入力されたテキストを取得
+  const text = command.text || '何も';
+  
+  // レスポンスを送信
+  await respond({
+    text: `こんにちは！「${text}」とおっしゃいましたね`,
+  });
+});
+
+// Expressアプリケーションの設定
+const expressApp = receiver.app;
+
+// ヘルスチェック用のエンドポイント
+expressApp.get('/', (req, res) => {
+  res.send('Hello World! Slack Bot is running!');
+});
+
+// サーバーの起動
+const PORT = process.env.PORT || 3000;
+expressApp.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
