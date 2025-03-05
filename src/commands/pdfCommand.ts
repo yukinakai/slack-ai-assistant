@@ -6,7 +6,7 @@ import validUrl from "valid-url";
 import path from "path";
 
 export function registerPdfCommand(app: App): void {
-  app.command("/pdf", async ({ command, ack, respond }) => {
+  app.command("/webclip", async ({ command, ack, respond }) => {
     // コマンドを確認
     await ack();
 
