@@ -1,4 +1,4 @@
-// src/commands/pdfCommand.ts
+// src/commands/webClipCommand.ts
 import { App } from "@slack/bolt";
 import { generatePdfFromUrl } from "../services/pdfGenerator";
 import { uploadFileToDrive } from "../services/driveService";
@@ -19,7 +19,7 @@ export function registerWebClipCommand(app: App): void {
     // URLの検証
     if (!url || !validUrl.isUri(url)) {
       await respond({
-        text: "エラー: 有効なURLを指定してください。例: `/pdf https://example.com`",
+        text: "エラー: 有効なURLを指定してください。例: `/webclip https://example.com`",
       });
       return;
     }
@@ -31,15 +31,15 @@ export function registerWebClipCommand(app: App): void {
       });
 
       // PDFを生成
-      const pdfPath = await generatePdfFromUrl(url);
+      const { filePath, title } = await generatePdfFromUrl(url);
 
-      // ファイル名を作成（URLからドメイン部分を取得）
-      const urlObj = new URL(url);
-      const domain = urlObj.hostname.replace("www.", "");
-      const fileName = `${domain}_${new Date().toISOString().slice(0, 10)}.pdf`;
+      // ファイル名を作成（ページタイトルを使用）
+      const safeTitle = title.replace(/[\/\\:*?"<>|]/g, "_");
+      const truncatedTitle = safeTitle.length > 100 ? safeTitle.substring(0, 100) : safeTitle;
+      const fileName = `${truncatedTitle}_${new Date().toISOString().slice(0, 10)}.pdf`;
 
       // Google Driveにアップロード
-      const driveUrl = await uploadFileToDrive(pdfPath, fileName);
+      const driveUrl = await uploadFileToDrive(filePath, fileName);
 
       // 成功メッセージ
       await client.chat.postMessage({
