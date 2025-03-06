@@ -54,6 +54,8 @@ export async function generatePdfFromUrl(
         left: "20px",
       },
     });
+    // 使用していないページを閉じる
+    await page.close();
 
     return {
       filePath: tempPath,
@@ -63,6 +65,18 @@ export async function generatePdfFromUrl(
     console.error("PDF生成中にエラーが発生しました:", error);
     throw error;
   } finally {
-    await browser.close();
+    // 必ずブラウザを閉じる
+    if (browser) {
+      try {
+        await browser.close();
+      } catch (closeError) {
+        console.error("ブラウザクローズ中にエラーが発生:", closeError);
+      }
+    }
+
+    // 明示的にガベージコレクションを促す（効果は環境による）
+    if (global.gc) {
+      global.gc();
+    }
   }
 }

@@ -1,5 +1,4 @@
 // src/app.ts
-import express from "express";
 import { App, ExpressReceiver } from "@slack/bolt";
 import dotenv from "dotenv";
 
@@ -31,6 +30,18 @@ const app = new App({
   receiver,
 });
 
+// メモリをチェック・クリーンアップする関数
+const checkAndCleanupMemory = () => {
+  const memUsage = process.memoryUsage();
+  console.log(`メモリ使用状況: ${JSON.stringify(memUsage)}`);
+
+  // ガベージコレクションを実行
+  if (global.gc) {
+    global.gc();
+    console.log(`GC後のメモリ: ${JSON.stringify(process.memoryUsage())}`);
+  }
+};
+
 // /hello コマンドのハンドラー
 app.command("/hello", async ({ command, ack, client }) => {
   // コマンドの確認応答
@@ -42,8 +53,11 @@ app.command("/hello", async ({ command, ack, client }) => {
   // レスポンスを送信
   await client.chat.postMessage({
     channel: command.channel_id,
-    text: `こんにちは！「${text}」とおっしゃいましたね`
+    text: `こんにちは！「${text}」とおっしゃいましたね`,
   });
+
+  // メモリクリーンアップ
+  checkAndCleanupMemory();
 });
 
 // /pdf コマンドの登録
@@ -52,9 +66,33 @@ registerWebClipCommand(app);
 // Expressアプリケーションの設定
 const expressApp = receiver.app;
 
+// ミドルウェアとして追加して、すべてのリクエスト後に実行
+expressApp.use((req, res, next) => {
+  next();
+  // リクエスト処理後にメモリをクリーンアップ
+  res.on("finish", () => {
+    checkAndCleanupMemory();
+  });
+});
+
 // ヘルスチェック用のエンドポイント
 expressApp.get("/", (req, res) => {
   res.send("Hello World! Slack Bot is running!");
+});
+
+// アプリケーション終了時の処理
+process.on("SIGTERM", async () => {
+  console.log(
+    "SIGTERMシグナルを受信: アプリケーションをクリーンアップして終了します"
+  );
+  // プロセスを終了
+  process.exit(0);
+});
+
+// 未処理の例外をキャッチ
+process.on("uncaughtException", (error) => {
+  console.error("未処理の例外:", error);
+  // 必要に応じてクリーンアップ処理
 });
 
 // サーバーの起動
