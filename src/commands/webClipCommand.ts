@@ -6,7 +6,7 @@ import validUrl from "valid-url";
 import path from "path";
 
 export function registerWebClipCommand(app: App): void {
-  app.command("/webclip", async ({ command, ack, respond }) => {
+  app.command("/webclip", async ({ command, ack, respond, client }) => {
     // コマンドを確認
     await ack();
 
@@ -38,7 +38,8 @@ export function registerWebClipCommand(app: App): void {
       const driveUrl = await uploadFileToDrive(pdfPath, fileName);
 
       // 成功メッセージ
-      await respond({
+      await client.chat.postMessage({
+        channel: command.channel_id,
         text: `PDFの生成とアップロードが完了しました！\n元のURL: ${url}\nGoogleドライブのリンク: ${driveUrl}`,
       });
     } catch (error) {

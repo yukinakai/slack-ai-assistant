@@ -32,7 +32,7 @@ const app = new App({
 });
 
 // /hello コマンドのハンドラー
-app.command("/hello", async ({ command, ack, respond }) => {
+app.command("/hello", async ({ command, ack, client }) => {
   // コマンドの確認応答
   await ack();
 
@@ -40,8 +40,9 @@ app.command("/hello", async ({ command, ack, respond }) => {
   const text = command.text || "何も";
 
   // レスポンスを送信
-  await respond({
-    text: `こんにちは！「${text}」とおっしゃいましたね`,
+  await client.chat.postMessage({
+    channel: command.channel_id,
+    text: `こんにちは！「${text}」とおっしゃいましたね`
   });
 });
 
