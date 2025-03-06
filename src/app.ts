@@ -18,11 +18,6 @@ if (!process.env.SLACK_SIGNING_SECRET) {
     "Warning: SLACK_SIGNING_SECRET is not set in environment variables"
   );
 }
-if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-  console.warn(
-    "Warning: GOOGLE_APPLICATION_CREDENTIALS is not set in environment variables"
-  );
-}
 
 // ExpressReceiverの設定
 const receiver = new ExpressReceiver({

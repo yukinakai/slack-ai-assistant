@@ -18,12 +18,6 @@ COPY package*.json ./
 # 依存関係のインストール
 RUN npm install
 
-# Google認証情報を格納するフォルダを作成
-RUN mkdir -p /app/keys
-
-# Google認証情報をコピー（もしあれば）
-COPY ./keys /app/keys/
-
 # ソースコードをコピー
 COPY . .
 
