@@ -9,11 +9,21 @@ interface PdfGenerationResult {
   title: string;
 }
 
-export async function generatePdfFromUrl(url: string): Promise<PdfGenerationResult> {
+export async function generatePdfFromUrl(
+  url: string
+): Promise<PdfGenerationResult> {
   // puppeteerを起動
   const browser = await puppeteer.launch({
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage", // 共有メモリの使用を無効化
+      "--disable-gpu", // GPUハードウェアアクセラレーションを無効化
+      "--disable-software-rasterizer",
+      "--headless=new", // 新しいheadlessモードを使用
+    ],
     headless: true,
+    timeout: 60000, // タイムアウト時間を延長（60秒）
   });
 
   try {
@@ -47,7 +57,7 @@ export async function generatePdfFromUrl(url: string): Promise<PdfGenerationResu
 
     return {
       filePath: tempPath,
-      title: title || "untitled"
+      title: title || "untitled",
     };
   } catch (error) {
     console.error("PDF生成中にエラーが発生しました:", error);
