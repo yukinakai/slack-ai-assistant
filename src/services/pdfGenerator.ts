@@ -1,11 +1,15 @@
 // src/services/pdfGenerator.ts
 import puppeteer from "puppeteer";
 import { v4 as uuidv4 } from "uuid";
-import fs from "fs";
 import path from "path";
 import os from "os";
 
-export async function generatePdfFromUrl(url: string): Promise<string> {
+interface PdfGenerationResult {
+  filePath: string;
+  title: string;
+}
+
+export async function generatePdfFromUrl(url: string): Promise<PdfGenerationResult> {
   // puppeteerを起動
   const browser = await puppeteer.launch({
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -20,6 +24,9 @@ export async function generatePdfFromUrl(url: string): Promise<string> {
       waitUntil: "networkidle2", // ネットワークがアイドル状態になるまで待機
       timeout: 30000, // タイムアウト30秒
     });
+
+    // ページタイトルを取得
+    const title = await page.title();
 
     // 一意のファイル名を生成
     const fileName = `${uuidv4()}.pdf`;
@@ -38,7 +45,10 @@ export async function generatePdfFromUrl(url: string): Promise<string> {
       },
     });
 
-    return tempPath;
+    return {
+      filePath: tempPath,
+      title: title || "untitled"
+    };
   } catch (error) {
     console.error("PDF生成中にエラーが発生しました:", error);
     throw error;
