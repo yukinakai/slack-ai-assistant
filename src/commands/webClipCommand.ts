@@ -4,6 +4,9 @@ import { generatePdfFromUrl } from "../services/pdfGenerator";
 import { uploadFileToDrive } from "../services/driveService";
 import validUrl from "valid-url";
 import { memoryUsage } from "process";
+import { EmbeddingService } from "../services/embeddingService";
+
+const embeddingService = new EmbeddingService();
 
 export function registerWebClipCommand(app: App): void {
   app.command("/webclip", async ({ command, ack, respond, client }) => {
@@ -27,24 +30,46 @@ export function registerWebClipCommand(app: App): void {
     try {
       // 処理中のメッセージ
       await respond({
-        text: `URLからPDFを生成しています...\n${url}`,
+        text: `WebClipを保存しています...\n${url}`,
       });
 
-      // PDFを生成
-      const { filePath, title } = await generatePdfFromUrl(url);
+      // ステップ1: PDFを生成（テキストも同時に抽出）
+      const { filePath, title, text } = await generatePdfFromUrl(url);
 
       // ファイル名を作成（ページタイトルを使用）
       const safeTitle = title.replace(/[\/\\:*?"<>|]/g, "_");
-      const truncatedTitle = safeTitle.length > 100 ? safeTitle.substring(0, 100) : safeTitle;
-      const fileName = `${truncatedTitle}_${new Date().toISOString().slice(0, 10)}.pdf`;
+      const truncatedTitle =
+        safeTitle.length > 100 ? safeTitle.substring(0, 100) : safeTitle;
+      const fileName = `${truncatedTitle}_${new Date()
+        .toISOString()
+        .slice(0, 10)}.pdf`;
 
-      // Google Driveにアップロード
+      // ステップ2: Google Driveにアップロード
       const driveUrl = await uploadFileToDrive(filePath, fileName);
 
-      // 成功メッセージ
-      await client.chat.postMessage({
+      // 一旦成功メッセージ
+      const messageResponse = await client.chat.postMessage({
         channel: command.channel_id,
-        text: `PDFの生成とアップロードが完了しました！\n元のURL: ${url}\nGoogleドライブのリンク: ${driveUrl}`,
+        text: `PDFの生成とアップロードが完了しました！\n元のURL: ${url}\nタイトル: ${title}\nGoogleドライブのリンク: ${driveUrl}\n\nPineconeに保存中...`,
+      });
+      const messageTs = messageResponse.ts;
+
+      // ステップ3: テキストをベクトル化してPineconeに保存
+      let vectorStatus = "";
+      if (text) {
+        const chunkCount = await embeddingService.saveContent(
+          url,
+          title,
+          driveUrl,
+          text
+        );
+        vectorStatus = `\n${chunkCount}チャンクのテキストをベクトル化して保存しました。検索インデックスに追加されました。`;
+      }
+
+      await client.chat.postMessage({
+        channel: command.update,
+        ts: messageTs,
+        text: `URLの保存が完了しました！\n元のURL: ${url}\nタイトル: ${title}\nGoogleドライブのリンク: ${driveUrl}${vectorStatus}\n\n保存したコンテンツは \`/pinecone\` コマンドで検索できます。`,
       });
     } catch (error) {
       console.error("PDFの処理中にエラーが発生しました:", error);
