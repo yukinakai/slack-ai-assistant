@@ -7,6 +7,8 @@ import os from "os";
 interface PdfGenerationResult {
   filePath: string;
   title: string;
+  content?: string; // HTMLコンテンツ（オプション）
+  text?: string; // 抽出されたテキスト（オプション）
 }
 
 export async function generatePdfFromUrl(
@@ -54,12 +56,58 @@ export async function generatePdfFromUrl(
         left: "20px",
       },
     });
+
+    // オプションでHTMLコンテンツとテキストを抽出
+    let content: string | undefined;
+    let text: string | undefined;
+
+    // HTMLコンテンツを取得
+    content = await page.content();
+
+    // テキストを抽出
+    text = await page.evaluate(() => {
+      // 不要な要素の配列
+      const excludeSelectors = [
+        "script",
+        "style",
+        "noscript",
+        "iframe",
+        "svg",
+        "nav",
+        "footer",
+        "header",
+        "aside",
+        '[role="navigation"]',
+        '[role="banner"]',
+        '[role="complementary"]',
+        '[role="contentinfo"]',
+      ];
+
+      // 不要な要素を削除
+      excludeSelectors.forEach((selector) => {
+        document.querySelectorAll(selector).forEach((el) => el.remove());
+      });
+
+      // テキストを抽出して整形
+      let extractedText = document.body.textContent || "";
+
+      // 余分な空白を整理
+      extractedText = extractedText
+        .replace(/\s+/g, " ")
+        .replace(/\n+/g, "\n")
+        .trim();
+
+      return extractedText;
+    });
+
     // 使用していないページを閉じる
     await page.close();
 
     return {
       filePath: tempPath,
       title: title || "untitled",
+      content, //TODO: 不要か？
+      text,
     };
   } catch (error) {
     console.error("PDF生成中にエラーが発生しました:", error);

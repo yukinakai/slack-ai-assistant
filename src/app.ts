@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 
 // コマンドハンドラー
 import { registerWebClipCommand } from "./commands/webClipCommand";
+import { registerPineconeCommand } from "./commands/pineconeCommand";
 
 // 環境変数の読み込み
 dotenv.config();
@@ -60,8 +61,10 @@ app.command("/hello", async ({ command, ack, client }) => {
   checkAndCleanupMemory();
 });
 
-// /pdf コマンドの登録
+// /webclip コマンドの登録
 registerWebClipCommand(app);
+// /pinecone コマンドの登録
+registerPineconeCommand(app);
 
 // Expressアプリケーションの設定
 const expressApp = receiver.app;
