@@ -6,7 +6,7 @@ import { EmbeddingService } from "../services/embeddingService";
 const embeddingService = new EmbeddingService();
 
 export function registerPineconeCommand(app: App): void {
-  app.command("/pinecone", async ({ command, ack, respond }) => {
+  app.command("/pinecone", async ({ command, ack, respond, client }) => {
     // 処理前のメモリ使用量を記録
     const memBefore = JSON.stringify(process.memoryUsage());
     console.log(`メモリ使用量(処理前): ${memBefore}`);
@@ -33,8 +33,9 @@ export function registerPineconeCommand(app: App): void {
       const searchResults = await embeddingService.searchDocuments(query, 5);
 
       if (searchResults.length === 0) {
-        await respond({
-          text: `"${query}" に一致する記事は見つかりませんでした。\n記事を保存するには \`/webclip-save URL\` コマンドを使用してください。`,
+        await client.chat.postMessage({
+          channel: command.channel_id,
+          text: `"${query}" に一致する記事は見つかりませんでした。\n記事を保存するには \`/webclip URL\` コマンドを使用してください。`,
         });
         return;
       }
@@ -64,7 +65,9 @@ export function registerPineconeCommand(app: App): void {
           type: "section",
           text: {
             type: "mrkdwn",
-            text: `*${index + 1}. <${result.url}|${result.title}>*\n関連スコア: ${Math.round(result.score * 100)}%`,
+            text: `*${index + 1}. <${result.url}|${
+              result.title
+            }>*\n関連スコア: ${Math.round(result.score * 100)}%`,
           },
         });
 
@@ -104,13 +107,14 @@ export function registerPineconeCommand(app: App): void {
         elements: [
           {
             type: "mrkdwn",
-            text: "他のキーワードで検索するには `/webclip-search キーワード` を使用してください。",
+            text: "他のキーワードで検索するには `/pinecone キーワード` を使用してください。",
           },
         ],
       });
 
       // レスポンスを送信
-      await respond({
+      await client.chat.postMessage({
+        channel: command.channel_id,
         blocks: resultBlocks,
         text: `"${query}" の検索結果: ${searchResults.length}件見つかりました。`, // フォールバックテキスト
       });
@@ -120,7 +124,8 @@ export function registerPineconeCommand(app: App): void {
       // エラーメッセージ
       const errorMessage =
         error instanceof Error ? error.message : "不明なエラー";
-      await respond({
+      await client.chat.postMessage({
+        channel: command.channel_id,
         text: `検索中にエラーが発生しました: ${errorMessage}\nもう一度お試しいただくか、システム管理者にお問い合わせください。`,
       });
     }

@@ -66,9 +66,9 @@ export function registerWebClipCommand(app: App): void {
         vectorStatus = `\n${chunkCount}チャンクのテキストをベクトル化して保存しました。検索インデックスに追加されました。`;
       }
 
-      await client.chat.postMessage({
-        channel: command.update,
-        ts: messageTs,
+      await client.chat.update({
+        channel: command.channel_id,
+        ts: messageTs as string,
         text: `URLの保存が完了しました！\n元のURL: ${url}\nタイトル: ${title}\nGoogleドライブのリンク: ${driveUrl}${vectorStatus}\n\n保存したコンテンツは \`/pinecone\` コマンドで検索できます。`,
       });
     } catch (error) {
