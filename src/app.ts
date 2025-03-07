@@ -26,6 +26,18 @@ const receiver = new ExpressReceiver({
   processBeforeResponse: true,
 });
 
+// Slack URLチャレンジの処理を追加
+receiver.router.post('/slack/events', (req, res, next) => {
+  // URLの検証チャレンジかどうかをチェック
+  if (req.body && req.body.type === 'url_verification') {
+    console.log('Slackからのチャレンジを受信:', req.body.challenge);
+    // チャレンジパラメータをそのまま返す
+    return res.json({ challenge: req.body.challenge });
+  }
+  // 通常のイベント処理へ
+  next();
+});
+
 // Slack Appの初期化
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
