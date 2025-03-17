@@ -7,7 +7,7 @@
     "build": "tsc",
     "start": "node --expose-gc dist/app.js",
     "dev": "nodemon --exec ts-node src/app.ts",
-    "deploy": "sh -c 'source .env && gcloud builds submit --tag gcr.io/$(gcloud config get-value project)/slack-ai-assistant && gcloud run deploy slack-ai-assistant --image gcr.io/$(gcloud config get-value project)/slack-ai-assistant --platform managed --region asia-northeast1 --memory=1Gi --allow-unauthenticated --service-account=slack-pdf-drive-sa@slack-ai-assistant-452809.iam.gserviceaccount.com --update-env-vars SLACK_BOT_TOKEN=$SLACK_BOT_TOKEN,SLACK_SIGNING_SECRET=$SLACK_SIGNING_SECRET,GOOGLE_DRIVE_FOLDER_ID=$GOOGLE_DRIVE_FOLDER_ID,OPENAI_API_KEY=$OPENAI_API_KEY,PINECONE_API_KEY=$PINECONE_API_KEY,PINECONE_ENVIRONMENT=$PINECONE_ENVIRONMENT,PINECONE_INDEX=$PINECONE_INDEX'"
+    "deploy": "sh -c 'source .env && gcloud config set project $GCP_PROJECT_ID && gcloud builds submit --tag gcr.io/$GCP_PROJECT_ID/slack-ai-assistant && gcloud run deploy slack-ai-assistant --image gcr.io/$GCP_PROJECT_ID/slack-ai-assistant --platform managed --region asia-northeast1 --memory=1Gi --allow-unauthenticated --service-account=slack-pdf-drive-sa@slack-ai-assistant-452809.iam.gserviceaccount.com --update-env-vars SLACK_BOT_TOKEN=$SLACK_BOT_TOKEN,SLACK_SIGNING_SECRET=$SLACK_SIGNING_SECRET,GOOGLE_DRIVE_FOLDER_ID=$GOOGLE_DRIVE_FOLDER_ID,OPENAI_API_KEY=$OPENAI_API_KEY,PINECONE_API_KEY=$PINECONE_API_KEY,PINECONE_ENVIRONMENT=$PINECONE_ENVIRONMENT,PINECONE_INDEX=$PINECONE_INDEX'"
   },
   "keywords": [
     "slack",
